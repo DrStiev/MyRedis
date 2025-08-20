@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,21 +22,78 @@ static void die(const char *msg) {
     
 }
 
-// need a way to do some interaction from server to client
-static void do_something(int connfd) {
-    char rbuf[64] = {};
-    // use read - write syscalls for sockets. They are the most generic IO interface
-    // also usable for disk files, pipes, etc...
-    ssize_t n = read(connfd, rbuf, sizeof(rbuf)-1);
-    if (n < 0) {
-        msg("read() error");
-        return;
+static int32_t read_full(int fd, char *buf, size_t n) {
+    // Whatever a read returns is accumulated in a buffer. It's how much data you have that matters, not how much a single read returns
+    while (n > 0) {
+        ssize_t rv = read(fd, buf, n);
+        if (rv <= 0) {
+            return -1; // Error, or Unexpected EOF
+        }
+
+        assert((size_t)rv <= n);
+        n -= (size_t)rv;
+        buf += rv;
+    }
+    return 0;
+}
+
+static int32_t write_all(int fd, const char *buf, size_t n) {
+    while (n > 0) {
+        ssize_t rv = write(fd, buf, n);
+        if (rv <= 0) {
+            return -1; // Error
+        }
+
+        assert((size_t)rv <= n);
+        n -= (size_t)rv;
+        buf += rv;
+    }
+    return 0;
+}
+
+const size_t k_max_msg = 4096;
+/*
+* Simple binary protocol
+* Each message consists of a 4-byte little-endian integer indicating the length of the request and the
+* variable-length payload.
+* --------------------------------------
+* | len | msg1 | len | msg2 | more ... |
+* --------------------------------------
+*    4B   ....    4B   ....
+*/
+static int32_t one_request(int connfd) {
+    // 4 bytes header
+    char rbuf[4+k_max_msg];
+    errno = 0;
+    int32_t err = read_full(connfd, rbuf, 4);
+    if (err) {
+        msg(errno == 0 ? "EOF" : "read() error");
+        return err;
     }
 
-    fprintf(stderr, "client says: %s\n", rbuf);
+    uint32_t len = 0;
+    memcpy(&len, rbuf, 4); // assume little endian
+    if (len > k_max_msg) {
+        msg("too long");
+        return -1;
+    }
 
-    char wbuf[] = "world";
-    write(connfd, wbuf, strlen(wbuf));
+    // request body
+    err = read_full(connfd, &rbuf[4], len);
+    if (err) {
+        msg("read() error");
+        return err;
+    }
+
+    // do something
+    printf("Client says: %.*s\n", len, &rbuf[4]);
+    // reply using the same protocol
+    const char reply[] = "world";
+    char wbuf[4+sizeof(reply)];
+    len = (uint32_t)strlen(reply);
+    memcpy(wbuf, &len, 4);
+    memcpy(&wbuf[4], reply, len);
+    return write_all(connfd, wbuf, 4+len);
 }
 
 // core part of server
@@ -93,9 +151,16 @@ int main() {
         if (connfd < 0) {
             continue; // an error occurred
         }
-        
-        // Step 6: Read & Write
-        do_something(connfd);
+        // Handle multiple request on a single connection
+        // only serves one client connection at once
+        while (true) {
+            // read 1 request and write 1 response
+            // Step 6: Read & Write
+            int32_t err = one_request(connfd);
+            if (err) {
+                break;
+            }
+        }
         close(connfd);
     }
 
