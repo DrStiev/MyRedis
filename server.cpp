@@ -16,7 +16,7 @@
 #include <vector>
 #include <string>
 #include <map>
-
+// proj
 #include "messages.h"
 #include "types.h"
 #include "parser.h"
@@ -147,9 +147,24 @@ static void handle_read(Conn *conn) {
     // Step 1: Do a non-blocking read
     uint8_t buf[64*1024];
     ssize_t rv = read(conn->fd, buf, sizeof(buf));
-    if (rv <= 0) { // handle IO erro (rv < 0) or EOF (rv == 0)
+    if (rv <= 0 && errno == EAGAIN) { 
+        return; // actually not ready
+    }
+    // handle IO error
+    if  (rv < 0) {
+        msg_errno("read() error");
+        conn->want_close =  true;
+        return; // want close
+    }
+    // handle EOF
+    if (rv == 0) {
+        if (conn->incoming.size() == 0) {
+            msg("client closed");
+        } else {
+            msg("unexpected EOF");
+        }
         conn->want_close = true;
-        return;
+        return; // want close
     }
 
     // Step 2: Add new data to the 'Conn::incoming' buffer
@@ -159,8 +174,8 @@ static void handle_read(Conn *conn) {
     // Step 5: Remove the message from 'Conn::incoming'
     
     // Add pipelining, parse requests and generate responses
-
     while (try_one_request(conn)) {} // ASSUMPTION: at most 1 request
+
     // update the readiness intention
     if (conn->outgoing.size() > 0) { // has a response. Step 1: Process 1 request
         conn->want_read = false;

@@ -1,8 +1,18 @@
 // stdlib
 #include <string.h>
-
+// proj
 #include "types.h"
 #include "buf_operations.h"
+#include "hashtable.h"
+
+#define container_of(ptr, T, member) \
+    ((T *)( (char *)ptr - offsetof(T, member) ))
+
+static bool eq(HashNode *lhs, HashNode *rhs) {
+    struct Entry *le = container_of(lhs, struct Entry, node);
+    struct Entry *re = container_of(rhs, struct Entry, node);
+    return le->key == re->key;
+}
 
 // helper function to deal with array indexes. This makes the code less error-prone
 static bool read_u32(const uint8_t *&cur, const uint8_t *end, uint32_t &out) {
@@ -62,21 +72,67 @@ static int32_t parse_req(const uint8_t *data, size_t size, std::vector<std::stri
     return 0;
 }
 
+static void do_get(std::vector<std::string> &cmd, Response &out) {
+    // a dummy 'Entry' just for the lookup
+    Entry key;
+    key.key.swap(cmd[1]);
+    key.node.hcode = hash((uint8_t *)key.key.data(), key.key.size());
+    
+    // hashable lookup
+    HashNode *node =  lookup(&g_data.db, &key.node, &eq);
+    if (!node) {
+        out.status = RES_NX;
+        return;
+    }
+
+    // copy the value
+    const std::string &val = container_of(node, Entry, node)->val;
+    assert(val.size() <= k_max_msg);
+    out.data.assign(val.begin(), val.end());
+}
+
+static void do_set(std::vector<std::string> &cmd, Response &) {
+    // dummy 'Entry' just for the lookup
+    Entry key;
+    key.key.swap(cmd[1]);
+    key.node.hcode = hash((uint8_t *)key.key.data(), key.key.size());
+
+    //hashtable lookup
+    HashNode *node = lookup(&g_data.db, &key.node, &eq);
+    if (node) {
+        // found, update the value
+        container_of(node, Entry, node)->val.swap(cmd[2]);
+    } else {
+        // not found, allocate & insert a new pair
+        Entry *ent =  new Entry();
+        ent->key.swap(key.key);
+        ent->node.hcode =  key.node.hcode;
+        ent->val.swap(cmd[2]);
+        insert(&g_data.db, &ent->node);
+    }
+}
+
+static void do_del(std::vector<std::string> &cmd, Response &) {
+    // dummy 'Entry' just for the lookup
+    Entry key;
+    key.key.swap(cmd[1]);
+    key.node.hcode = hash((uint8_t *)key.key.data(), key.key.size());
+    //  hashable delete
+    HashNode *node = hm_delete(&g_data.db, &key.node, &eq);
+    if (node) {
+        // deallocate the pair
+        delete container_of(node, Entry, node);
+    }
+}
+
 // Step 2: Process the command
 static void do_request(std::vector<std::string> &cmd, Response &out) {
     if (cmd.size() == 2 && cmd[0] == "get") {
-        auto it = g_data.find(cmd[1]);
-        if (it == g_data.end()) {
-            out.status = RES_NX; // not found
-            return;
-        }
-
-        const std::string &val = it->second;
-        out.data.assign(val.begin(), val.end());
+        return do_get(cmd, out);
     } else if (cmd.size() == 3 && cmd[0] == "set") {
-        g_data[cmd[1]].swap(cmd[2]);
+        do_set(cmd, out);
     } else if (cmd.size() == 2 && cmd[0] == "del") {
-        g_data.erase(cmd[1]);
+        do_del(cmd, out);
     } else {
         out.status = RES_ERR; // unrecognized command
     }
