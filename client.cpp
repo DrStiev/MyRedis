@@ -11,31 +11,9 @@
 #include <string>
 #include <vector>
 
-const size_t k_max_msg = 32 << 20;
-
-// need a way to print out formatted messages
-static void msg(const char *msg) {
-    fprintf(stderr, "%s\n", msg);
-}
-
-// need a way to print out formatted error messages
-static void die(const char *msg) {
-    int err = errno;
-    fprintf(stderr, "[%d] %s\n", err, msg);
-    abort();
-    
-}
-
-// use std::vector as the buffer type, which is just a dynamic array
-//append to the back
-static void buf_append(std::vector<uint8_t> &buf, const uint8_t *data, size_t len) {
-    buf.insert(buf.end(), data, data+len);
-}
-
-// remove from the front
-static void buf_consume(std::vector<uint8_t> &buf, size_t n) {
-    buf.erase(buf.begin(), buf.begin()+n);
-}
+#include "messages.h"
+#include "types.h"
+#include "buf_operations.h"
 
 static int32_t read_full(int fd, uint8_t *buf, size_t n) {
     // Whatever a read returns is accumulated in a buffer. It's how much data you have that matters, not how much a single read returns
