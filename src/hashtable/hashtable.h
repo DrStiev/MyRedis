@@ -1,6 +1,3 @@
-#ifndef HASHTABLE_H
-#define HASHTABLE_H
-
 #pragma once
 
 #include <stddef.h>
@@ -59,5 +56,3 @@ static uint64_t hash(const uint8_t *data, size_t len) {
     }
     return h;
 }
-
-#endif

@@ -1,11 +1,9 @@
-#ifndef PARSER_H
-#define PARSER_H
-
+#pragma once
 // stdlib
 #include <string.h>
 // proj
 #include "buf_operations.h"
-#include "hashtable.h"
+#include "../hashtable/hashtable.h"
 #include "types.h"
 
 // de factor standard for intrusive data structures.
@@ -220,5 +218,3 @@ static void response_end(Buffer &out, size_t header) {
     uint32_t len = (uint32_t)msg_size;
     memcpy(&out[header], &len, 4);
 }
-
-#endif

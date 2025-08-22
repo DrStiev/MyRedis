@@ -17,10 +17,10 @@
 #include <string>
 #include <vector>
 // proj
-#include "buf_operations.h"
-#include "messages.h"
-#include "parser.h"
-#include "types.h"
+#include "common/buf_operations.h"
+#include "common/messages.h"
+#include "common/parser.h"
+#include "common/types.h"
 
 // make the listening socket non-blocking with fcntl
 static void fd_set_nb(int fd) {

@@ -1,5 +1,4 @@
-#ifndef BUF_OPERATIONS_H
-#define BUF_OPERATIONS_H
+#pragma once
 
 // stdlib
 #include <stdint.h>
@@ -38,5 +37,3 @@ static void buf_append_i64(Buffer &buf, int64_t data) {
 static void buf_append_dbl(Buffer &buf, double data) {
     buf_append(buf, (const uint8_t *)&data, 8);
 }
-
-#endif

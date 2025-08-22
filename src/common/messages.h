@@ -1,5 +1,4 @@
-#ifndef MESSAGES_H
-#define MESSAGES_H
+#pragma once
 
 // stdlib
 #include <errno.h>
@@ -21,5 +20,3 @@ static void die(const char *msg) {
     fprintf(stderr, "[%d] %s\n", errno, msg);
     abort();
 }
-
-#endif

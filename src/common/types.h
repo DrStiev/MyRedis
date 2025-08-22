@@ -1,5 +1,4 @@
-#ifndef TYPES_H
-#define TYPES_H
+#pragma once
 
 // stdlib
 #include <stdint.h>
@@ -8,7 +7,7 @@
 #include <string>
 #include <vector>
 // proj
-#include "hashtable.h"
+#include "../hashtable/hashtable.h"
 
 const size_t k_max_msg = 32 << 20;
 
@@ -66,5 +65,3 @@ enum {
     TAG_DBL = 4,  // double
     TAG_ARR = 5,  // array
 };
-
-#endif

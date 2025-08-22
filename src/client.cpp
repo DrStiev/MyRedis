@@ -12,9 +12,9 @@
 #include <string>
 #include <vector>
 // proj
-#include "buf_operations.h"
-#include "messages.h"
-#include "types.h"
+#include "common/buf_operations.h"
+#include "common/messages.h"
+#include "common/types.h"
 
 const size_t max_msg = 4096;
 
