@@ -1,7 +1,10 @@
+#ifndef MESSAGES_H
+#define MESSAGES_H
+
 // stdlib
-#include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // need a way to print out formatted messages
 static void msg(const char *msg) {
@@ -17,5 +20,6 @@ static void msg_errno(const char *msg) {
 static void die(const char *msg) {
     fprintf(stderr, "[%d] %s\n", errno, msg);
     abort();
-    
 }
+
+#endif
