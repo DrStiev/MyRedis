@@ -19,6 +19,7 @@ struct AVLNode {
     AVLNode *left = NULL;
     AVLNode *right = NULL;
     uint32_t height = 0;  // auxiliary data for AVL tree
+    uint32_t count = 0;   // subtree size
 };
 
 inline void init(AVLNode *node) {
@@ -30,8 +31,11 @@ inline void init(AVLNode *node) {
 inline uint32_t height(AVLNode *node) {
     return node ? node->height : 0;
 }
-
+inline uint32_t count(AVLNode *node) {
+    return node ? node->count : 0;
+}
 
 // API
 AVLNode *fix(AVLNode *node);
 AVLNode *del(AVLNode *node);
+AVLNode *offset(AVLNode *node, int64_t offset);

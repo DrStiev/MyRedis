@@ -8,13 +8,15 @@ SRC_DIR = src
 BUILD_DIR = build
 COMMON_DIR = $(SRC_DIR)/common
 HASHTABLE_DIR = $(SRC_DIR)/hashtable
+SORTED_SET_DIR = $(SRC_DIR)/sorted_set
+TREE_DIR = $(SRC_DIR)/tree
 
 # Target executables
 SERVER = server
 CLIENT = client 
 
 # Source files
-SERVER_SOURCE = $(SRC_DIR)/server.cpp $(HASHTABLE_DIR)/hashtable.cpp
+SERVER_SOURCE = $(SRC_DIR)/server.cpp $(HASHTABLE_DIR)/hashtable.cpp $(SORTED_SET_DIR)/zset.cpp $(TREE_DIR)/avl.cpp
 CLIENT_SOURCE = $(SRC_DIR)/client.cpp 
 
 # Object files
@@ -28,6 +30,8 @@ all: $(SERVER) $(CLIENT)
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/hashtable
+	mkdir -p $(BUILD_DIR)/sorted_set
+	mkdir -p $(BUILD_DIR)/tree
 
 # Build server
 $(SERVER): $(SERVER_OBJECT)

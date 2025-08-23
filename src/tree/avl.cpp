@@ -6,12 +6,9 @@ static uint32_t max(uint32_t lhs, uint32_t rhs) {
     return lhs < rhs ? rhs : lhs;
 }
 
-static uint32_t height(AVLNode *node) {
-    return node ? node->height : 0;
-}
-
 static void update(AVLNode *node) {
     node->height = 1 + max(height(node->left), height(node->right));
+    node->count = 1 + count(node->left) + count(node->right);
 }
 
 /*
@@ -171,4 +168,34 @@ AVLNode *del(AVLNode *node) {
 
     *from = victim;
     return root;
+}
+
+// offset into the succeeding or preceding node
+// note: the worst-case is O(logN) regardless of  how long the offset is
+AVLNode *offset(AVLNode *node, int64_t offset) {
+    int64_t pos = 0;  // the rank difference from the starting node
+    while (offset != pos) {
+        if (pos < offset && pos + count(node->right) >= offset) {
+            // the target is inside the right subtree
+            node = node->right;
+            pos += count(node->left) + 1;
+        } else if (pos > offset && pos - count(node->left) <= offset) {
+            // the target is  inside the left subtree
+            node = node->left;
+            pos -= count(node->right) + 1;
+        } else {
+            // go to the parent
+            AVLNode *parent = node->parent;
+            if (!parent) {
+                return NULL;
+            }
+            if (parent->right == node) {
+                pos -= count(node->left) + 1;
+            } else {
+                pos += count(node->right) + 1;
+            }
+            node = parent;
+        }
+    }
+    return node;
 }

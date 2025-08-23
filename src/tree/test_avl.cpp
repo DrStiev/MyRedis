@@ -5,12 +5,7 @@
 #include <set>
 // proj
 #include "avl.h"
-
-#define container_of(ptr, type, member)                    \
-    ({                                                     \
-        const typeof(((type *)0)->member) *__mptr = (ptr); \
-        (type *)((char *)__mptr - offsetof(type, member)); \
-    })
+#include "common/common.h"
 
 struct Data {
     AVLNode node;

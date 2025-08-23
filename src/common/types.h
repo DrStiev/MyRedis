@@ -8,8 +8,11 @@
 #include <vector>
 // proj
 #include "../hashtable/hashtable.h"
+#include "../sorted_set/zset.h"
 
 const size_t k_max_msg = 32 << 20;
+const size_t k_max_args = 200 * 1000;
+static const ZSet k_empty_zset;
 
 typedef std::vector<uint8_t> Buffer;
 
@@ -43,17 +46,29 @@ static struct {
     HashMap db;  // top-level hashtable
 } g_data;
 
+enum {
+    T_INIT = 0,
+    T_STR = 1,   // string
+    T_ZSET = 2,  // sorted set
+};
+
 // KV pair for the top-level hashtable
 struct Entry {
-    struct HashNode node;
+    struct HashNode node;  // hashtable node
     std::string key;
-    std::string val;
+    // value
+    uint32_t type = 0;
+    // one of the following
+    std::string str;
+    ZSet zset;
 };
 
 // error code for TAG_ERR
 enum {
-    ERR_UNKNOWN = 1,
-    ERR_TOO_BIG = 2,
+    ERR_UNKNOWN = 1,  // unknown command
+    ERR_TOO_BIG = 2,  // response too big
+    ERR_BAD_TYP = 3,  // unexpected value type
+    ERR_BAD_ARG = 4,  // bad  arguments
 };
 
 // simple serialization format
@@ -64,4 +79,9 @@ enum {
     TAG_INT = 3,  // int64
     TAG_DBL = 4,  // double
     TAG_ARR = 5,  // array
+};
+
+struct LookupKey {
+    struct HashNode node;  // hashtable node
+    std::string key;
 };

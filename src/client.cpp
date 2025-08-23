@@ -1,11 +1,13 @@
-#include <arpa/inet.h>
+// stdlib
 #include <assert.h>
 #include <errno.h>
-#include <netinet/ip.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// system
+#include <arpa/inet.h>
+#include <netinet/ip.h>
 #include <sys/socket.h>
 #include <unistd.h>
 // C++
@@ -60,7 +62,7 @@ static int32_t send_req(int fd, const std::vector<std::string> &cmd) {
 
     char wbuf[4 + max_msg];
     memcpy(&wbuf[0], &len, 4);  // assume little endian
-    uint32_t n = cmd.size();
+    uint32_t n = (uint32_t)cmd.size();
     memcpy(&wbuf[4], &n, 4);
     size_t cur = 8;
 

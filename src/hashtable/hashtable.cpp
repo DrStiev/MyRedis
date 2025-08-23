@@ -89,7 +89,7 @@ HashNode *lookup(HashMap *hmap, HashNode *key,
     return from ? *from : NULL;
 }
 
-HashNode *hm_delete(HashMap *hmap, HashNode *key,
+HashNode *del(HashMap *hmap, HashNode *key,
                     bool (*eq)(HashNode *, HashNode *)) {
     help_rehashing(hmap);
     if (HashNode **from = lookup(&hmap->newer, key, eq)) {

@@ -37,22 +37,20 @@ struct HashMap {
     size_t migrate_pos = 0;
 };
 
+// helper struct for the hashtable key compare function
+struct HashKey {
+    HashNode node;
+    const char *name =NULL;
+    size_t len = 0;
+};
+
 // generic functions
 HashNode *lookup(HashMap *hmap, HashNode *key,
                  bool (*eq)(HashNode *, HashNode *));
 void insert(HashMap *hmap, HashNode *node);
-HashNode *hm_delete(HashMap *hmap, HashNode *key,
+HashNode *del(HashMap *hmap, HashNode *key,
                     bool (*eq)(HashNode *, HashNode *));
 void clear(HashMap *hmap);
 size_t size(HashMap *hmap);
 // invoke the callback on each node until it returns false
 void foreach (HashMap *hmap, bool (*f)(HashNode *, void *), void *arg);
-
-// FNV hash
-static uint64_t hash(const uint8_t *data, size_t len) {
-    uint32_t h = 0x811C9DC5;
-    for (size_t i = 0; i < len; i++) {
-        h = (h + data[i]) * 0x01000193;
-    }
-    return h;
-}
