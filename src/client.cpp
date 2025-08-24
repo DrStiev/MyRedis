@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 // proj
-#include "common/buf_operations.h"
 #include "common/messages.h"
 #include "common/types.h"
 
