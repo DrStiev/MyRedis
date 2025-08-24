@@ -1,8 +1,8 @@
 // stdlib
 #include <assert.h>
 // proj
-#include "avl.h"
-#include "common/common.h"
+#include "../src/tree/avl.h"
+#include "../src/common/common.h"
 
 struct Data {
     AVLNode node;
