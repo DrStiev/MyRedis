@@ -42,34 +42,14 @@ static void fd_set_nb(int fd) {
     // fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 }
 
-// use std::vector as the buffer type, which is just a dynamic array
 // append to the back
-inline void buf_append(std::vector<uint8_t> &buf, const uint8_t *data,
-                       size_t len) {
+static void buf_append(Buffer &buf, const uint8_t *data, size_t len) {
     buf.insert(buf.end(), data, data + len);
 }
 
 // remove from the front
-inline void buf_consume(std::vector<uint8_t> &buf, size_t n) {
+static void buf_consume(Buffer &buf, size_t n) {
     buf.erase(buf.begin(), buf.begin() + n);
-}
-
-// helper function to handle different endianness
-inline void buf_append_u8(Buffer &buf, uint8_t data) {
-    buf.push_back(data);
-}
-
-// helper function to handle different endianness
-inline void buf_append_u32(Buffer &buf, uint32_t data) {
-    buf_append(buf, (const uint8_t *)&data, 4);  // assume little endian
-}
-
-inline void buf_append_i64(Buffer &buf, int64_t data) {
-    buf_append(buf, (const uint8_t *)&data, 8);
-}
-
-inline void buf_append_dbl(Buffer &buf, double data) {
-    buf_append(buf, (const uint8_t *)&data, 8);
 }
 
 // the event loop calls back the application code to do the accept()
@@ -157,6 +137,20 @@ static int32_t parse_req(const uint8_t *data, size_t size,
     }
 
     return 0;
+}
+
+// help functions for the serialization
+static void buf_append_u8(Buffer &buf, uint8_t data) {
+    buf.push_back(data);
+}
+static void buf_append_u32(Buffer &buf, uint32_t data) {
+    buf_append(buf, (const uint8_t *)&data, 4);
+}
+static void buf_append_i64(Buffer &buf, int64_t data) {
+    buf_append(buf, (const uint8_t *)&data, 8);
+}
+static void buf_append_dbl(Buffer &buf, double data) {
+    buf_append(buf, (const uint8_t *)&data, 8);
 }
 
 // function to output serialized data
@@ -366,6 +360,7 @@ static void do_zrem(std::vector<std::string> &cmd, Buffer &out) {
     if (znode) {
         del(zset, znode);
     }
+    return out_int(out, znode ? 1 : 0);
 }
 
 static void do_zscore(std::vector<std::string> &cmd, Buffer &out) {
@@ -534,9 +529,9 @@ static void handle_write(Conn *conn) {
     buf_consume(conn->outgoing, (size_t)rv);
 
     // update the readiness intention
-    if (conn->outgoing.size() ==
-        0) {  // all data is written. Step 2: Written 1 response
-        conn->want_read = true;  // Step 3: Wait for more data
+    if (conn->outgoing.size() == 0) {  // all data is written
+                                       // Step 2: Written 1 response
+        conn->want_read = true;        // Step 3: Wait for more data
         conn->want_write = false;
     }  // else: want write
 }
@@ -576,8 +571,8 @@ static void handle_read(Conn *conn) {
     }  // ASSUMPTION: at most 1 request
 
     // update the readiness intention
-    if (conn->outgoing.size() >
-        0) {  // has a response. Step 1: Process 1 request
+    if (conn->outgoing.size() > 0) {  // has a response
+                                      // Step 1: Process 1 request
         conn->want_read = false;
         conn->want_write = true;
         // The socket is likely ready to write in a request-response protocol.
