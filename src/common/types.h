@@ -10,10 +10,12 @@
 #include "../hashtable/hashtable.h"
 #include "../list/dl_list.h"
 #include "../sorted_set/zset.h"
+#include "../tree/heap.h"
 
 const size_t k_max_msg = 32 << 20;
 const size_t k_max_args = 200 * 1000;
 static const ZSet k_empty_zset;
+const size_t k_max_works = 2000;
 
 typedef std::vector<uint8_t> Buffer;
 
@@ -52,6 +54,8 @@ static struct {
     std::vector<Conn *> fd2conn;
     // timers for idle connections
     DL_List idle_list;  // list head
+    // timer for TTLs
+    std::vector<HeapItem> heap;
 } g_data;
 
 enum {
@@ -64,6 +68,8 @@ enum {
 struct Entry {
     struct HashNode node;  // hashtable node
     std::string key;
+    // for TTL
+    size_t heap_idx = -1;  // array index to the heap item
     // value
     uint32_t type = 0;
     // one of the following

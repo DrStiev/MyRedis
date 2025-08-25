@@ -17,18 +17,32 @@ SERVER = server
 CLIENT = client 
 TEST1 = test_avl
 TEST2 = test_offset
+TEST3 = test_heap
 
 # Source files
-SERVER_SOURCE = $(SRC_DIR)/server.cpp $(HASHTABLE_DIR)/hashtable.cpp $(SORTED_SET_DIR)/zset.cpp $(TREE_DIR)/avl.cpp
+SERVER_SOURCE = $(SRC_DIR)/server.cpp \
+				$(HASHTABLE_DIR)/hashtable.cpp \
+				$(SORTED_SET_DIR)/zset.cpp \
+				$(TREE_DIR)/avl.cpp \
+				$(TREE_DIR)/heap.cpp
+
 CLIENT_SOURCE = $(SRC_DIR)/client.cpp 
-TEST1_SOURCE = $(TEST_DIR)/test_avl.cpp $(TREE_DIR)/avl.cpp
-TEST2_SOURCE = $(TEST_DIR)/test_offset.cpp $(TREE_DIR)/avl.cpp
+
+TEST1_SOURCE = $(TEST_DIR)/test_avl.cpp \
+			   $(TREE_DIR)/avl.cpp
+
+TEST2_SOURCE = $(TEST_DIR)/test_offset.cpp \
+			   $(TREE_DIR)/avl.cpp
+			   
+TEST3_SOURCE = $(TEST_DIR)/test_heap.cpp \
+			   $(TREE_DIR)/heap.cpp
 
 # Object files
 SERVER_OBJECT = $(SERVER_SOURCE:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 CLIENT_OBJECT = $(CLIENT_SOURCE:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 TEST1_OBJECT = $(TEST1_SOURCE:$(TEST_DIR)/%.cpp=$(BUILD_DIR)/tests/%.o)
 TEST2_OBJECT = $(TEST2_SOURCE:$(TEST_DIR)/%.cpp=$(BUILD_DIR)/tests/%.o)
+TEST3_OBJECT = $(TEST3_SOURCE:$(TEST_DIR)/%.cpp=$(BUILD_DIR)/tests/%.o)
 
 # Default target - build both programs
 all: $(SERVER) $(CLIENT)
@@ -56,8 +70,11 @@ $(TEST1): $(TEST1_OBJECT)
 $(TEST2): $(TEST2_OBJECT)
 	$(CXX) $(TEST2_OBJECT) -o $@ $(LDFLAGS)
 
+$(TEST3): $(TEST3_OBJECT)
+	$(CXX) $(TEST3_OBJECT) -o $@ $(LDFLAGS)
+
 # Test target to build all tests
-test: $(TEST1) $(TEST2)
+test: $(TEST1) $(TEST2) $(TEST3)
 	@echo "Tests compiled successfully"
 
 # Object files (with automatic directory creation)
@@ -70,7 +87,7 @@ $(BUILD_DIR)/tests/%.o: $(TEST_DIR)/%.cpp | $(BUILD_DIR)
 
 # Clean up generated files
 clean:
-	rm -rf $(BUILD_DIR) $(SERVER) $(CLIENT) $(TEST1) $(TEST2)
+	rm -rf $(BUILD_DIR) $(SERVER) $(CLIENT) $(TEST1) $(TEST2) $(TEST3)
 
 # Rebuild everything from scratch
 rebuild: clean all
