@@ -22,6 +22,7 @@
 #include "common/types.h"
 #include "hashtable/hashtable.h"
 #include "sorted_set/zset.h"
+#include "thread/thread_pool.h"
 #include "timer/timer.h"
 #include "tree/heap.h"
 
@@ -229,12 +230,32 @@ static Entry *entry_new(uint32_t type) {
 
 static void set_ttl(Entry *ent, int64_t ttl_ms);
 
-static void del(Entry *ent) {
+// sorted set destruction in the thread pool
+
+// previous del()
+static void del_sync(Entry *ent) {
     if (ent->type == T_ZSET) {
         clear(&ent->zset);
     }
-    set_ttl(ent, -1);  // remove from the heap data structure
     delete ent;
+}
+
+// wrapper function for the thread pool
+static void del(void *arg) {
+    del_sync((Entry *)arg);
+}
+
+// new del()
+static void del(Entry *ent) {
+    // unlink it from any data structures
+    set_ttl(ent, -1);  // remove from the heap data structure
+    // run the destructor in a thread pool for large data structures
+    size_t set_size = (ent->type == T_ZSET) ? size(&ent->zset.hmap) : 0;
+    if (set_size > k_large_container_size) {
+        queue(&g_data.thread_pool, &del, ent);
+    } else {
+        del_sync(ent);  // small, avoid context switch
+    }
 }
 
 // equality comparison  for the top-level hashtable
@@ -404,6 +425,7 @@ static bool str2dbl(const std::string &s, double &out) {
     return endp == s.c_str() + s.size() && !isnan(out);
 }
 
+// zadd zset score name
 static void do_zadd(std::vector<std::string> &cmd, Buffer &out) {
     double score = 0;
     if (!str2dbl(cmd[2], score)) {
@@ -447,6 +469,7 @@ static ZSet *expect_zset(std::string &s) {
     return ent->type == T_ZSET ? &ent->zset : NULL;
 }
 
+// zrem zset name
 static void do_zrem(std::vector<std::string> &cmd, Buffer &out) {
     ZSet *zset = expect_zset(cmd[1]);
     if (!zset) {
@@ -461,6 +484,7 @@ static void do_zrem(std::vector<std::string> &cmd, Buffer &out) {
     return out_int(out, znode ? 1 : 0);
 }
 
+// zscore zset name
 static void do_zscore(std::vector<std::string> &cmd, Buffer &out) {
     ZSet *zset = expect_zset(cmd[1]);
     if (!zset) {
@@ -472,6 +496,7 @@ static void do_zscore(std::vector<std::string> &cmd, Buffer &out) {
     return znode ? out_dbl(out, znode->score) : out_nil(out);
 }
 
+// zquery zset score name offset limit
 static void do_zquery(std::vector<std::string> &cmd, Buffer &out) {
     // parse args
     double score = 0;
@@ -748,6 +773,7 @@ static void process_timers() {
 int main() {
     // initialization
     init(&g_data.idle_list);
+    init(&g_data.thread_pool, 4);
 
     // Step 1: Obtain a socket handle
     /*

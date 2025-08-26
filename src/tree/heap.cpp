@@ -1,5 +1,5 @@
 // proj
-#include "heap.h";
+#include "heap.h"
 
 // calculate the index of a child node given the index of the parent node
 static size_t left(size_t i) {

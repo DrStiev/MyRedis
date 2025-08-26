@@ -10,12 +10,14 @@
 #include "../hashtable/hashtable.h"
 #include "../list/dl_list.h"
 #include "../sorted_set/zset.h"
+#include "../thread/thread_pool.h"
 #include "../tree/heap.h"
 
 const size_t k_max_msg = 32 << 20;
 const size_t k_max_args = 200 * 1000;
-static const ZSet k_empty_zset;
 const size_t k_max_works = 2000;
+const size_t k_large_container_size = 1000;
+static const ZSet k_empty_zset;
 
 typedef std::vector<uint8_t> Buffer;
 
@@ -56,6 +58,8 @@ static struct {
     DL_List idle_list;  // list head
     // timer for TTLs
     std::vector<HeapItem> heap;
+    // the thread pool
+    ThreadPool thread_pool;
 } g_data;
 
 enum {

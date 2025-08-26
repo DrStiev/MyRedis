@@ -10,6 +10,7 @@ COMMON_DIR = $(SRC_DIR)/common
 HASHTABLE_DIR = $(SRC_DIR)/hashtable
 SORTED_SET_DIR = $(SRC_DIR)/sorted_set
 TREE_DIR = $(SRC_DIR)/tree
+THREAD_POOL_DIR = $(SRC_DIR)/thread
 TEST_DIR = tests
 
 # Target executables
@@ -24,7 +25,8 @@ SERVER_SOURCE = $(SRC_DIR)/server.cpp \
 				$(HASHTABLE_DIR)/hashtable.cpp \
 				$(SORTED_SET_DIR)/zset.cpp \
 				$(TREE_DIR)/avl.cpp \
-				$(TREE_DIR)/heap.cpp
+				$(TREE_DIR)/heap.cpp \
+				$(THREAD_POOL_DIR)/thread_pool.cpp
 
 CLIENT_SOURCE = $(SRC_DIR)/client.cpp 
 
@@ -53,6 +55,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/hashtable
 	mkdir -p $(BUILD_DIR)/sorted_set
 	mkdir -p $(BUILD_DIR)/tree
+	mkdir -p $(BUILD_DIR)/thread
 	mkdir -p $(BUILD_DIR)/tests
 
 # Build server
