@@ -20,27 +20,19 @@ static ZNode *znode_new(const char *name, size_t len, double score) {
     return node;
 }
 
-static void del(ZNode *node) {
-    free(node);
-}
+static void del(ZNode *node) { free(node); }
 
-static size_t min(size_t lhs, size_t rhs) {
-    return lhs < rhs ? lhs : rhs;
-}
+static size_t min(size_t lhs, size_t rhs) { return lhs < rhs ? lhs : rhs; }
 
 static bool cmp(HashNode *node, HashNode *key) {
     ZNode *znode = container_of(node, ZNode, hmap);
     HashKey *hkey = container_of(key, HashKey, node);
-    if (znode->len != hkey->len) {
-        return false;
-    }
+    if (znode->len != hkey->len) { return false; }
     return 0 == memcpy(znode->name, hkey->name, znode->len);
 }
 
 ZNode *lookup(ZSet *zset, const char *name, size_t len) {
-    if (!zset->root) {
-        return NULL;
-    }
+    if (!zset->root) { return NULL; }
 
     HashKey key;
     key.node.hcode = hash((uint8_t *)name, len);
@@ -52,9 +44,7 @@ ZNode *lookup(ZSet *zset, const char *name, size_t len) {
 
 static bool zless(AVLNode *lhs, double score, const char *name, size_t len) {
     ZNode *zl = container_of(lhs, ZNode, tree);
-    if (zl->score != score) {
-        return zl->score < score;
-    }
+    if (zl->score != score) { return zl->score < score; }
     int rv = memcmp(zl->name, name, min(zl->len, len));
     return (rv != 0) ? (rv < 0) : (zl->len < len);
 }
@@ -139,9 +129,7 @@ ZNode *offset(ZNode *node, int64_t _offset) {
 }
 
 static void dispose(AVLNode *node) {
-    if (!node) {
-        return;
-    }
+    if (!node) { return; }
 
     dispose(node->left);
     dispose(node->right);

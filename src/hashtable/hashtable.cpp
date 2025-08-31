@@ -25,9 +25,7 @@ static void insert(HashTable *htab, HashNode *node) {
 // Step 6: Hashtable lookup
 static HashNode **lookup(HashTable *htab, HashNode *key,
                          bool (*eq)(HashNode *, HashNode *)) {
-    if (!htab->table) {
-        return NULL;
-    }
+    if (!htab->table) { return NULL; }
 
     size_t pos = key->hcode & htab->mask;
     HashNode **from = &htab->table[pos];  // incoming pointer to target
@@ -83,14 +81,12 @@ HashNode *lookup(HashMap *hmap, HashNode *key,
                  bool (*eq)(HashNode *, HashNode *)) {
     help_rehashing(hmap);
     HashNode **from = lookup(&hmap->newer, key, eq);
-    if (!from) {
-        from = lookup(&hmap->older, key, eq);
-    }
+    if (!from) { from = lookup(&hmap->older, key, eq); }
     return from ? *from : NULL;
 }
 
 HashNode *del(HashMap *hmap, HashNode *key,
-                    bool (*eq)(HashNode *, HashNode *)) {
+              bool (*eq)(HashNode *, HashNode *)) {
     help_rehashing(hmap);
     if (HashNode **from = lookup(&hmap->newer, key, eq)) {
         return detach(&hmap->newer, from);
@@ -110,9 +106,7 @@ void insert(HashMap *hmap, HashNode *node) {
     insert(&hmap->newer, node);  // always insert to the newer table
     if (!hmap->older.table) {    // check wheter we need to rehash
         size_t threshold = (hmap->newer.mask + 1) * k_max_load_factor;
-        if (hmap->newer.size >= threshold) {
-            trigger_rehashing(hmap);
-        }
+        if (hmap->newer.size >= threshold) { trigger_rehashing(hmap); }
     }
     help_rehashing(hmap);  // migrate some keys
 }
@@ -123,23 +117,18 @@ void clear(HashMap *hmap) {
     *hmap = HashMap();
 }
 
-size_t size(HashMap *hmap) {
-    return hmap->newer.size + hmap->older.size;
-}
+size_t size(HashMap *hmap) { return hmap->newer.size + hmap->older.size; }
 
 static bool foreach (HashTable *htab, bool (*f)(HashNode *, void *),
                      void *arg) {
     for (size_t i = 0; htab->mask != 0 && i <= htab->mask; i++) {
         for (HashNode *node = htab->table[i]; node != NULL; node = node->next) {
-            if (!f(node, arg)) {
-                return false;
-            }
+            if (!f(node, arg)) { return false; }
         }
     }
     return true;
 }
 
 void foreach (HashMap *hmap, bool (*f)(HashNode *, void *), void *arg) {
-    foreach (&hmap->newer, f, arg)
-        &&foreach (&hmap->older, f, arg);
+    foreach (&hmap->newer, f, arg) &&foreach (&hmap->older, f, arg);
 }

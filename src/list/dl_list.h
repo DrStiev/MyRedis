@@ -9,9 +9,7 @@ struct DL_List {
 };
 
 // Dummy node is linked to itself, forming a circle
-inline void init(DL_List *node) {
-    node->prev = node->next = node;
-}
+inline void init(DL_List *node) { node->prev = node->next = node; }
 
 // due to the dummy node, insertion does not need to handle the empty case
 inline void insert_before(DL_List *target, DL_List *rookie) {
@@ -30,6 +28,4 @@ inline void detach(DL_List *node) {
 }
 
 // and empty list is a list with only the dummy node
-inline bool is_empty(DL_List *node) {
-    return node->next == node;
-}
+inline bool is_empty(DL_List *node) { return node->next == node; }

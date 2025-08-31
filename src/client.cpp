@@ -52,12 +52,8 @@ static int32_t write_all(int fd, const char *buf, size_t n) {
 // split the 'query' function into 'send_req' and 'read_res'
 static int32_t send_req(int fd, const std::vector<std::string> &cmd) {
     uint32_t len = 4;
-    for (const std::string &s : cmd) {
-        len += 4 + s.size();
-    }
-    if (len > max_msg) {
-        return -1;
-    }
+    for (const std::string &s : cmd) { len += 4 + s.size(); }
+    if (len > max_msg) { return -1; }
 
     char wbuf[4 + max_msg];
     memcpy(&wbuf[0], &len, 4);  // assume little endian
@@ -82,9 +78,7 @@ static int32_t print_response(const uint8_t *data, size_t size) {
     }
 
     switch (data[0]) {
-        case TAG_NIL:
-            printf("(nil)\n");
-            return 1;
+        case TAG_NIL: printf("(nil)\n"); return 1;
         case TAG_ERR:
             if (size < 1 + 8) {
                 msg("bad response");
@@ -156,17 +150,13 @@ static int32_t print_response(const uint8_t *data, size_t size) {
                 for (uint32_t i = 0; i < len; ++i) {
                     int32_t rv =
                         print_response(&data[arr_bytes], size - arr_bytes);
-                    if (rv < 0) {
-                        return rv;
-                    }
+                    if (rv < 0) { return rv; }
                     arr_bytes += (size_t)rv;
                 }
                 printf("(arr) end\n");
                 return (int32_t)arr_bytes;
             }
-        default:
-            msg("bad response");
-            return -1;
+        default: msg("bad response"); return -1;
     }
 }
 
@@ -212,9 +202,7 @@ static int32_t read_res(int fd) {
 // dummy example just to write something and then read back from server
 int main(int argc, char **argv) {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0) {
-        die("socket()");
-    }
+    if (fd < 0) { die("socket()"); }
 
     struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;
@@ -222,25 +210,17 @@ int main(int argc, char **argv) {
     addr.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);  // 0x7f000001 = 127.0.0.1
 
     int rv = connect(fd, (const struct sockaddr *)&addr, sizeof(addr));
-    if (rv) {
-        die("connect");
-    }
+    if (rv) { die("connect"); }
 
     // multiple pipelined requests
     // test pipeline messages
     std::vector<std::string> cmd;
-    for (int i = 1; i < argc; ++i) {
-        cmd.push_back(argv[i]);
-    }
+    for (int i = 1; i < argc; ++i) { cmd.push_back(argv[i]); }
 
     int32_t err = send_req(fd, cmd);
-    if (err) {
-        goto L_DONE;
-    }
+    if (err) { goto L_DONE; }
     err = read_res(fd);
-    if (err) {
-        goto L_DONE;
-    }
+    if (err) { goto L_DONE; }
 
 L_DONE:
     close(fd);

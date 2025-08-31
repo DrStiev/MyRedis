@@ -40,7 +40,7 @@ struct HashMap {
 // helper struct for the hashtable key compare function
 struct HashKey {
     HashNode node;
-    const char *name =NULL;
+    const char *name = NULL;
     size_t len = 0;
 };
 
@@ -48,8 +48,7 @@ struct HashKey {
 HashNode *lookup(HashMap *hmap, HashNode *key,
                  bool (*eq)(HashNode *, HashNode *));
 void insert(HashMap *hmap, HashNode *node);
-HashNode *del(HashMap *hmap, HashNode *key,
-                    bool (*eq)(HashNode *, HashNode *));
+HashNode *del(HashMap *hmap, HashNode *key, bool (*eq)(HashNode *, HashNode *));
 void clear(HashMap *hmap);
 size_t size(HashMap *hmap);
 // invoke the callback on each node until it returns false

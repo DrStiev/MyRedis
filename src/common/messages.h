@@ -6,9 +6,7 @@
 #include <stdlib.h>
 
 // need a way to print out formatted messages
-inline void msg(const char *msg) {
-    fprintf(stderr, "%s\n", msg);
-}
+inline void msg(const char *msg) { fprintf(stderr, "%s\n", msg); }
 
 // need a way to print out formatted error messages
 inline void msg_errno(const char *msg) {

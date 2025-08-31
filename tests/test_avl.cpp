@@ -4,8 +4,8 @@
 // C++
 #include <set>
 // proj
-#include "../src/tree/avl.h"
 #include "../src/common/common.h"
+#include "../src/tree/avl.h"
 
 struct Data {
     AVLNode node;
@@ -38,14 +38,10 @@ static bool del(Container &c, uint32_t val) {
     AVLNode *cur = c.root;
     while (cur) {
         uint32_t node_val = container_of(cur, Data, node)->val;
-        if (val == node_val) {
-            break;
-        }
+        if (val == node_val) { break; }
         cur = val < node_val ? cur->left : cur->right;
     }
-    if (!cur) {
-        return false;
-    }
+    if (!cur) { return false; }
 
     c.root = del(cur);
     delete container_of(cur, Data, node);
@@ -53,9 +49,7 @@ static bool del(Container &c, uint32_t val) {
 }
 
 static void verify(AVLNode *parent, AVLNode *node) {
-    if (!node) {
-        return;
-    }
+    if (!node) { return; }
 
     assert(node->parent == parent);
     verify(node, node->left);
@@ -78,9 +72,7 @@ static void verify(AVLNode *parent, AVLNode *node) {
 }
 
 static void extract(AVLNode *node, std::multiset<uint32_t> &extracted) {
-    if (!node) {
-        return;
-    }
+    if (!node) { return; }
 
     extract(node->left, extracted);
     extracted.insert(container_of(node, Data, node)->val);
@@ -107,9 +99,7 @@ static void test_insert(uint32_t sz) {
         Container c;
         std::multiset<uint32_t> ref;
         for (uint32_t i = 0; i < sz; ++i) {
-            if (i == val) {
-                continue;
-            }
+            if (i == val) { continue; }
             add(c, i);
             ref.insert(i);
         }

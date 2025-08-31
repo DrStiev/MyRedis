@@ -24,9 +24,7 @@ static AVLNode *rote_left(AVLNode *node) {
 
     // node <-> inner
     node->right = inner;
-    if (inner) {
-        inner->parent = node;
-    }
+    if (inner) { inner->parent = node; }
 
     // parent <- new_node
     new_node->parent = parent;  // NOTE: may be NULL
@@ -48,9 +46,7 @@ static AVLNode *rote_right(AVLNode *node) {
 
     // node <-> inner
     node->left = inner;
-    if (inner) {
-        inner->parent = node;
-    }
+    if (inner) { inner->parent = node; }
 
     // parent <- new_node
     new_node->parent = parent;  // NOTE: may be NULL
@@ -103,9 +99,7 @@ AVLNode *fix(AVLNode *node) {
         }
 
         // root node, stop
-        if (!parent) {
-            return *from;
-        }
+        if (!parent) { return *from; }
 
         // continue to the parent node because its height may be changed
         node = parent;
@@ -137,27 +131,19 @@ static AVLNode *del_easy(AVLNode *node) {
 // Step 6: Detach a node (hard case)
 AVLNode *del(AVLNode *node) {
     // the easy case of 0 or 1 child
-    if (!node->left || !node->right) {
-        return del_easy(node);
-    }
+    if (!node->left || !node->right) { return del_easy(node); }
 
     // find successor
     AVLNode *victim = node->right;
-    while (victim->left) {
-        victim = victim->left;
-    }
+    while (victim->left) { victim = victim->left; }
 
     // detach the successor
     AVLNode *root = del_easy(victim);
 
     // swap with the successor
     *victim = *node;  // left, right, parent
-    if (victim->left) {
-        victim->left->parent = victim;
-    }
-    if (victim->right) {
-        victim->right->parent = victim;
-    }
+    if (victim->left) { victim->left->parent = victim; }
+    if (victim->right) { victim->right->parent = victim; }
 
     // attach the sccessor to the parent, or update the root pointer
     AVLNode **from = &root;
@@ -186,9 +172,7 @@ AVLNode *offset(AVLNode *node, int64_t offset) {
         } else {
             // go to the parent
             AVLNode *parent = node->parent;
-            if (!parent) {
-                return NULL;
-            }
+            if (!parent) { return NULL; }
             if (parent->right == node) {
                 pos -= count(node->left) + 1;
             } else {

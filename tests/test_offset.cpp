@@ -1,8 +1,8 @@
 // stdlib
 #include <assert.h>
 // proj
-#include "../src/tree/avl.h"
 #include "../src/common/common.h"
+#include "../src/tree/avl.h"
 
 struct Data {
     AVLNode node;
@@ -47,14 +47,10 @@ static void dispose(AVLNode *node) {
 
 static void test_case(uint32_t sz) {
     Container c;
-    for (uint32_t i = 0; i < sz; ++i) {
-        add(c, i);
-    }
+    for (uint32_t i = 0; i < sz; ++i) { add(c, i); }
 
     AVLNode *min = c.root;
-    while (min->left) {
-        min = min->left;
-    }
+    while (min->left) { min = min->left; }
 
     for (uint32_t i = 0; i < sz; ++i) {
         AVLNode *node = offset(min, (int64_t)i);
@@ -72,8 +68,6 @@ static void test_case(uint32_t sz) {
 }
 
 int main() {
-    for (uint32_t i = 1; i < 500; ++i) {
-        test_case(i);
-    }
+    for (uint32_t i = 1; i < 500; ++i) { test_case(i); }
     return 0;
 }

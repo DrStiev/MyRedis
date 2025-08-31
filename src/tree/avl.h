@@ -28,12 +28,8 @@ inline void init(AVLNode *node) {
 }
 
 // helpers
-inline uint32_t height(AVLNode *node) {
-    return node ? node->height : 0;
-}
-inline uint32_t count(AVLNode *node) {
-    return node ? node->count : 0;
-}
+inline uint32_t height(AVLNode *node) { return node ? node->height : 0; }
+inline uint32_t count(AVLNode *node) { return node ? node->count : 0; }
 
 // API
 AVLNode *fix(AVLNode *node);

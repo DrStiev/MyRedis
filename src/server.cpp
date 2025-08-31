@@ -39,9 +39,7 @@ static void fd_set_nb(int fd) {
 
     errno = 0;
     (void)fcntl(fd, F_SETFL, flags);
-    if (errno) {
-        die("fcntl error");
-    }
+    if (errno) { die("fcntl error"); }
     // fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 }
 
@@ -100,9 +98,7 @@ static void destroy(Conn *conn) {
 // helper function to deal with array indexes. This makes the code less
 // error-prone
 static bool read_u32(const uint8_t *&cur, const uint8_t *end, uint32_t &out) {
-    if (cur + 4 > end) {
-        return false;
-    }
+    if (cur + 4 > end) { return false; }
     memcpy(&out, cur, 4);
     cur += 4;
     return true;
@@ -112,9 +108,7 @@ static bool read_u32(const uint8_t *&cur, const uint8_t *end, uint32_t &out) {
 // different syntax
 static bool read_str(const uint8_t *&cur, const uint8_t *end, size_t n,
                      std::string &out) {
-    if (cur + n > end) {
-        return false;
-    }
+    if (cur + n > end) { return false; }
     out.assign(cur, cur + n);
     cur += n;
     return true;
@@ -134,22 +128,16 @@ static int32_t parse_req(const uint8_t *data, size_t size,
                          std::vector<std::string> &out) {
     const uint8_t *end = data + size;
     uint32_t nstr = 0;
-    if (!read_u32(data, end, nstr)) {
-        return -1;
-    }
+    if (!read_u32(data, end, nstr)) { return -1; }
     if (nstr > k_max_args) {
         return -1;  // safety limit
     }
 
     while (out.size() < nstr) {
         uint32_t len = 0;
-        if (!read_u32(data, end, len)) {
-            return -1;
-        }
+        if (!read_u32(data, end, len)) { return -1; }
         out.push_back(std::string());
-        if (!read_str(data, end, len, out.back())) {
-            return -1;
-        }
+        if (!read_str(data, end, len, out.back())) { return -1; }
     }
 
     if (data != end) {
@@ -160,9 +148,7 @@ static int32_t parse_req(const uint8_t *data, size_t size,
 }
 
 // help functions for the serialization
-static void buf_append_u8(Buffer &buf, uint8_t data) {
-    buf.push_back(data);
-}
+static void buf_append_u8(Buffer &buf, uint8_t data) { buf.push_back(data); }
 static void buf_append_u32(Buffer &buf, uint32_t data) {
     buf_append(buf, (const uint8_t *)&data, 4);
 }
@@ -174,9 +160,7 @@ static void buf_append_dbl(Buffer &buf, double data) {
 }
 
 // function to output serialized data
-static void out_nil(Buffer &out) {
-    buf_append_u8(out, TAG_NIL);
-}
+static void out_nil(Buffer &out) { buf_append_u8(out, TAG_NIL); }
 
 // function to output serialized data
 static void out_str(Buffer &out, const char *s, size_t size) {
@@ -234,16 +218,12 @@ static void set_ttl(Entry *ent, int64_t ttl_ms);
 
 // previous del()
 static void del_sync(Entry *ent) {
-    if (ent->type == T_ZSET) {
-        clear(&ent->zset);
-    }
+    if (ent->type == T_ZSET) { clear(&ent->zset); }
     delete ent;
 }
 
 // wrapper function for the thread pool
-static void del(void *arg) {
-    del_sync((Entry *)arg);
-}
+static void del(void *arg) { del_sync((Entry *)arg); }
 
 // new del()
 static void del(Entry *ent) {
@@ -273,9 +253,7 @@ static void do_get(std::vector<std::string> &cmd, Buffer &out) {
 
     // hashtable lookup
     HashNode *node = lookup(&g_data.db, &key.node, &eq);
-    if (!node) {
-        return out_nil(out);
-    }
+    if (!node) { return out_nil(out); }
 
     // copy the value
     Entry *ent = container_of(node, Entry, node);
@@ -331,9 +309,7 @@ static void del(std::vector<HeapItem> &a, size_t pos) {
     a[pos] = a.back();
     a.pop_back();
     // update the swapped item
-    if (pos < a.size()) {
-        update(a.data(), pos, a.size());
-    }
+    if (pos < a.size()) { update(a.data(), pos, a.size()); }
 }
 
 static void upsert(std::vector<HeapItem> &a, size_t pos, HeapItem t) {
@@ -415,8 +391,7 @@ static bool cb_keys(HashNode *node, void *arg) {
 
 static void do_keys(std::vector<std::string> &, Buffer &out) {
     out_arr(out, (uint32_t)size(&g_data.db));
-    foreach (&g_data.db, &cb_keys, (void *)&out)
-        ;
+    foreach (&g_data.db, &cb_keys, (void *)&out);
 }
 
 static bool str2dbl(const std::string &s, double &out) {
@@ -472,24 +447,18 @@ static ZSet *expect_zset(std::string &s) {
 // zrem zset name
 static void do_zrem(std::vector<std::string> &cmd, Buffer &out) {
     ZSet *zset = expect_zset(cmd[1]);
-    if (!zset) {
-        return out_err(out, ERR_BAD_TYP, "expect zset");
-    }
+    if (!zset) { return out_err(out, ERR_BAD_TYP, "expect zset"); }
 
     const std::string &name = cmd[2];
     ZNode *znode = lookup(zset, name.data(), name.size());
-    if (znode) {
-        del(zset, znode);
-    }
+    if (znode) { del(zset, znode); }
     return out_int(out, znode ? 1 : 0);
 }
 
 // zscore zset name
 static void do_zscore(std::vector<std::string> &cmd, Buffer &out) {
     ZSet *zset = expect_zset(cmd[1]);
-    if (!zset) {
-        return out_err(out, ERR_BAD_TYP, "expected zset");
-    }
+    if (!zset) { return out_err(out, ERR_BAD_TYP, "expected zset"); }
 
     const std::string &name = cmd[2];
     ZNode *znode = lookup(zset, name.data(), name.size());
@@ -511,14 +480,10 @@ static void do_zquery(std::vector<std::string> &cmd, Buffer &out) {
 
     // get the zset
     ZSet *zset = expect_zset(cmd[1]);
-    if (!zset) {
-        return out_err(out, ERR_BAD_TYP, "expect zset");
-    }
+    if (!zset) { return out_err(out, ERR_BAD_TYP, "expect zset"); }
 
     // seek key
-    if (limit <= 0) {
-        return out_arr(out, 0);
-    }
+    if (limit <= 0) { return out_arr(out, 0); }
     ZNode *znode = seekge(zset, score, name.data(), name.size());
     znode = offset(znode, _offset);
 
@@ -694,8 +659,7 @@ static void handle_read(Conn *conn) {
     // Step 5: Remove the message from 'Conn::incoming'
 
     // Add pipelining, parse requests and generate responses
-    while (try_one_request(conn)) {
-    }  // ASSUMPTION: at most 1 request
+    while (try_one_request(conn)) {}  // ASSUMPTION: at most 1 request
 
     // update the readiness intention
     if (conn->outgoing.size() > 0) {  // has a response
@@ -735,9 +699,7 @@ static uint32_t next_timer_ms() {
     return (int32_t)(next_ms - now_ms);
 }
 
-static bool same(HashNode *node, HashNode *key) {
-    return node == key;
-}
+static bool same(HashNode *node, HashNode *key) { return node == key; }
 
 static void process_timers() {
     uint64_t now_ms = get_monotonic_msec();
@@ -787,9 +749,7 @@ int main() {
      * +------------+----------------------------------+
      */
     int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0) {
-        die("socket()");
-    }
+    if (fd < 0) { die("socket()"); }
 
     // Step 2: Set socket options
     int val = 1;
@@ -809,9 +769,7 @@ int main() {
     addr.sin_addr.s_addr = ntohl(0);  // wildcard IP 0.0.0.0
 
     int rv = bind(fd, (const sockaddr *)&addr, sizeof(addr));
-    if (rv) {
-        die("bind()");
-    }
+    if (rv) { die("bind()"); }
 
     // set the listen fd to nonblocking mode
     fd_set_nb(fd);
@@ -819,9 +777,7 @@ int main() {
     // Step 4: Listen
     // the socket is created after listen()
     rv = listen(fd, SOMAXCONN);
-    if (rv) {
-        die("listen()");
-    }
+    if (rv) { die("listen()"); }
 
     // event loop
     std::vector<struct pollfd> poll_args;
@@ -836,19 +792,13 @@ int main() {
         poll_args.push_back(pfd);
         // the rest are connection sockets
         for (Conn *conn : g_data.fd2conn) {
-            if (!conn) {
-                continue;
-            }
+            if (!conn) { continue; }
 
             // always poll() for error
             struct pollfd pfd = {conn->fd, POLLERR, 0};
             // poll() flags from the application's intent
-            if (conn->want_read) {
-                pfd.events |= POLLIN;
-            }
-            if (conn->want_write) {
-                pfd.events |= POLLOUT;
-            }
+            if (conn->want_read) { pfd.events |= POLLIN; }
+            if (conn->want_write) { pfd.events |= POLLOUT; }
             poll_args.push_back(pfd);
         }
         // Step 2: Call 'poll()'
@@ -860,23 +810,17 @@ int main() {
             continue;  // not an error
         }
 
-        if (rv < 0) {
-            die("poll");
-        }
+        if (rv < 0) { die("poll"); }
 
         // Step 3: Accept new connections
         // handle the listening socket
-        if (poll_args[0].revents) {
-            handle_accept(fd);
-        }
+        if (poll_args[0].revents) { handle_accept(fd); }
 
         // Step 4: Invoke application callbacks
         // handle connection sockets
         for (size_t i = 1; i < poll_args.size(); ++i) {  // note: skip the 1st
             uint32_t ready = poll_args[i].revents;
-            if (ready == 0) {
-                continue;
-            }
+            if (ready == 0) { continue; }
 
             Conn *conn = g_data.fd2conn[poll_args[i].fd];
 
@@ -897,9 +841,7 @@ int main() {
 
             // Step 5: Terminate connections
             // close the socket from socket error on application logic
-            if ((ready & POLLERR) || conn->want_close) {
-                destroy(conn);
-            }
+            if ((ready & POLLERR) || conn->want_close) { destroy(conn); }
         }  // for each connection sockets
         process_timers();  // handle timers
     }  // the event loop

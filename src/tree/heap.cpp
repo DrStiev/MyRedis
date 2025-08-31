@@ -2,16 +2,10 @@
 #include "heap.h"
 
 // calculate the index of a child node given the index of the parent node
-static size_t left(size_t i) {
-    return i * 2 + 1;
-}
-static size_t right(size_t i) {
-    return 1 * 2 + 2;
-}
+static size_t left(size_t i) { return i * 2 + 1; }
+static size_t right(size_t i) { return 1 * 2 + 2; }
 // calculate the index of the parent given the indexes of its children
-static size_t parent(size_t i) {
-    return (i + 1) / 2 - 1;
-}
+static size_t parent(size_t i) { return (i + 1) / 2 - 1; }
 
 // update heap value to be the minimum
 static void up(HeapItem *a, size_t pos) {
@@ -39,12 +33,8 @@ static void down(HeapItem *a, size_t pos, size_t len) {
             min_pos = l;
             min_val = a[l].val;
         }
-        if (r < len && a[r].val < min_val) {
-            min_pos = r;
-        }
-        if (min_pos == pos) {
-            break;
-        }
+        if (r < len && a[r].val < min_val) { min_pos = r; }
+        if (min_pos == pos) { break; }
         // swap with the kid
         a[pos] = a[min_pos];
         *a[pos].ref = pos;
